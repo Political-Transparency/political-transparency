@@ -12,8 +12,8 @@ app.get("/", (req, res) => {
   res.send("hello");
 });
 app.get("/api/bills/:knessetNum",retrieveData.getBillsByKnessetNum);
-const port = 8080;
 
+const port = 8080;
 app.listen(port, () => {
   console.log(`server is listening http://localhost:${port}`);
 });
