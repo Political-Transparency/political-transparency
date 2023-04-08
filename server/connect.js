@@ -5,6 +5,7 @@ const pool = createPool({
   user: "root",
   password: "password",
   connectionLimit: 10,
+  database:"test"
 });
 
 module.exports = pool;

@@ -1,17 +1,22 @@
 const pool = require("./connect");
 
-const insertKnessetMemberRow = (id, memberName, isActive) => {
+function validate(billName) {
+  var newStr = billName.replace("'", '"');
+  return newStr;
+}
 
+const insertKnessetMemberRow = (memberID, memberName, isActive) => {};
+const insertBillRow = async (billID, billName, knessetNum) => {
+  const billNameValidator = validate(billName);
+  const sql = `INSERT INTO bill_names(id, name, knesset_num) VALUES (${billID}, ' ${billNameValidator} ', ${knessetNum})`;
+  pool.query(sql, (err, result) => {
+    if (err) throw err;
+  });
 };
-const insertBillRow = (billID, billName, knessetNum) => {
-
-};
-const insertVoteForBillRow = (billID, memberID, voteValue) => {
-
-};
+const insertVoteForBillRow = (billID, memberID, voteValue) => {};
 
 module.exports = {
-    insertBillRow,
-    insertKnessetMemberRow,
-    insertVoteForBillRow
-}
+  insertBillRow,
+  insertKnessetMemberRow,
+  insertVoteForBillRow,
+};
