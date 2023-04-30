@@ -1,24 +1,26 @@
 import styled from 'styled-components';
-import MyTabs from './MyTabs';
+import MyTabs from './TabsCard';
+
 
 const BillsSelection = () => {
+    const tabsHeaders = [
+        { title: 'טקסט חופשי', content: <input></input> },
+        { title: 'מספר כנסת', content: <input type='number'></input> },
+      ];
+      
+
     return (
         <BillsSelectionWrapper>
             <div>
                 <div>
-                    <input></input>
-                    <input></input>
+                <MyTabs tabsHeaders={tabsHeaders}/>
                 </div>
-                <div>
-                    <input></input>
-                    <input></input>
-                </div>
-                <button></button>
+   
+                <button>!חפש</button>
             </div>
             <Rectangle />
             <Rectangle />
             <button></button>
-            <MyTabs/>
         </BillsSelectionWrapper>
     )
 };
