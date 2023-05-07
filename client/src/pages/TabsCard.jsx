@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Tabs, Tab, Paper } from "@material-ui/core";
+import styled from "styled-components";
 
 const TabsCard = (props) => {
   const { tabsHeaders } = props;
@@ -13,14 +14,20 @@ const TabsCard = (props) => {
     <Paper>
       <Tabs value={activeTab} onChange={handleTabChange}>
         {tabsHeaders.map((tab, index) => (
-          
-            <Tab key={index} label={tab.title}></Tab>
-          
+          <Tab key={index} label={tab.title}></Tab>
         ))}
       </Tabs>
-      <div>{tabsHeaders[activeTab].content}</div>
+      <TabContentWrapper>
+        <div>{tabsHeaders[activeTab].description}</div>
+        <div>{tabsHeaders[activeTab].content}</div>
+      </TabContentWrapper>
     </Paper>
   );
 };
 
+const TabContentWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
 export default TabsCard;
