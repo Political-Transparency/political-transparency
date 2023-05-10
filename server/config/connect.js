@@ -14,6 +14,7 @@ import { createPool } from "mysql";
  * Local connection
  */
 const pool = createPool({
+  multipleStatements: true,
   host: "localhost",
   user: "root",
   password: "1234",

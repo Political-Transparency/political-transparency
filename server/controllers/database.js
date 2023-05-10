@@ -1,4 +1,5 @@
 import xml2js from "xml2js";
+import { XMLParser, XMLValidator } from "fast-xml-parser";
 import {
   insertBillRow,
   insertKnessetMemberRow,
@@ -6,17 +7,15 @@ import {
   updateVoteId,
 } from "../config/database.js";
 
-export const xmlParser = (xml) => {
-  return new Promise((resolve, reject) => {
-    const parser = new xml2js.Parser();
-    parser.parseString(xml, (err, result) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(result);
-      }
-    });
-  });
+export const xmlParser = async (xml) => {
+  try {
+    const parser = new XMLParser();
+    const data = parser.parse(xml);
+    return data;
+  } catch (error) {
+    console.log("XML PARSER FUNCTION PROBLEM?", error);
+    throw error;
+  }
 };
 
 const billUrl = `http://knesset.gov.il/Odata/ParliamentInfo.svc/KNS_Bill()`;
@@ -28,15 +27,7 @@ const fetchBills = async (res, skip, knessetNum) => {
       `${billUrl}?$filter=KnessetNum%20eq%20${knessetNum}&$skip=${skip}&count=${count}`
     );
     const xml = await response.text();
-
     const result = await xmlParser(xml);
-    // parser.parseString(xml, (err, result, res) => {
-    //   if (err) {
-    //     console.error(err);
-    //     return res.status(500).json({ err: err.message });
-    //   }
-    //   xmlResult = result;
-    // });
     const entries = await result["feed"]["entry"];
     if (!entries) {
       return; // All bills have been fetched
@@ -131,34 +122,59 @@ export const getKnessetMembers = async (req, res) => {
   }
   return res.status(200).json({ result: "succeed" });
 };
-const getBillVoteId = async (billId) => {
-  const url = `http://knesset.gov.il/Odata/Votes.svc/View_vote_rslts_hdr_Approved?$filter=sess_item_id%20eq%20${billId}%20`;
-  const response = await fetch(url);
-  const toXmlParser = await response.text();
-  const data = await xmlParser(toXmlParser);
-  if (data) {
-    const entry = data["feed"]["entry"];
-    const voteId =
-      entry[0]["content"][0]["m:properties"][0]["d:vote_id"][0]["_"];
-    return voteId;
-  }
-  return undefined;
-};
-// http://knesset.gov.il/Odata/Votes.svc/View_vote_rslts_hdr_Approved?$filter=sess_item_id%20eq%20565532%20 need to extract from here the vote_id by using the bill_id as sess_item_id
-
-// http://knesset.gov.il/Odata/Votes.svc/vote_rslts_kmmbr_shadow?$filter=vote_id%20eq%2031173 odata query to get who voted using vote_id
-export const getVotes = async (req, res) => {
+export const getBillVoteIds = async (req, res) => {
+  let knessetNum = 1;
+  let skip = 0;
+  let top = 100;
   try {
-    const { billId: billId } = req.query;
-    const voteId = await getBillVoteId(billId);
-    await updateVoteId(billId, voteId);
-    const url = `http://knesset.gov.il/Odata/Votes.svc/vote_rslts_kmmbr_shadow?$filter=vote_id%20eq%20${voteId}`; // odata query to get who voted using vote_id
-    const response = await fetch(url);
-    const toXmlParser = await response.text();
-    const data = await xmlParser(toXmlParser);
-    // console.log(data["feed"]["entry"][0]["content"][0]["m:properties"][0]);
+    while (knessetNum < 25) {
+      skip = 0;
+      while (true) {
+        const url = `https://knesset.gov.il/Odata/Votes.svc/View_vote_rslts_hdr_Approved?$filter=knesset_num%20eq%20${knessetNum}&$skip=${skip}&$top=${top}`;
+        const response = await fetch(url);
+        if (!response) {
+          console.log("Response PROBLEM");
+        }
+        const toXmlParser = await response.text();
+        if (!toXmlParser) {
+          console.log("XML PARSER PROBLEM");
+        }
+        const data = await xmlParser(toXmlParser);
+        const entries = data["feed"]["entry"];
+
+        if (!entries) {
+          knessetNum += 1;
+          console.log(knessetNum);
+          break;
+        } else {
+          // console.log(data)
+          skip += top;
+          // console.log(skip);
+        }
+      }
+    }
     return res.status(200).json({ result: "success" });
   } catch (error) {
+    console.log(skip);
     return res.status(404).json({ error: error.message });
   }
 };
+
+// http://knesset.gov.il/Odata/Votes.svc/View_vote_rslts_hdr_Approved?$filter=sess_item_id%20eq%20565532%20 need to extract from here the vote_id by using the bill_id as sess_item_id
+
+// http://knesset.gov.il/Odata/Votes.svc/vote_rslts_kmmbr_shadow?$filter=vote_id%20eq%2031173 odata query to get who voted using vote_id
+// export const getVotes = async (req, res) => {
+//   try {
+//     const { billId: billId } = req.query;
+//     // const voteId = await getBillVoteId(billId);
+//     await updateVoteId(billId, voteId);
+//     const url = `http://knesset.gov.il/Odata/Votes.svc/vote_rslts_kmmbr_shadow?$filter=vote_id%20eq%20${voteId}`; // odata query to get who voted using vote_id
+//     const response = await fetch(url);
+//     const toXmlParser = await response.text();
+//     const data = await xmlParser(toXmlParser);
+//     // console.log(data["feed"]["entry"][0]["content"][0]["m:properties"][0]);
+//     return res.status(200).json({ result: "success" });
+//   } catch (error) {
+//     return res.status(404).json({ error: error.message });
+//   }
+// };
