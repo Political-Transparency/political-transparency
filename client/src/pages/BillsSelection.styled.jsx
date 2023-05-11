@@ -39,14 +39,12 @@ export const FormContainer = styled.div`
   gap: 20px;
 `;
 
-export const BillsSelectionContainer = styled.div`
-
-`;
+export const BillsSelectionContainer = styled.div``;
 
 export const BillsTableContainer = styled.div`
   display: flex;
   border: 1px solid black;
   width: 25%;
-  height: 50%;
+  height: 500px;
   overflow: auto;
 `;

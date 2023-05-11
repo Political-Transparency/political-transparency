@@ -1,12 +1,19 @@
 import MyTabs from "./TabsCard";
 import { useState } from "react";
 import BillsList from "../common/BillsList";
-import { BillsSelectionContainer, BillsSelectionWrapper, BillsTableContainer, FormContainer, Header, HeadersWrapper, Hint } from "./BillsSelection.styled";
+import {
+  BillsSelectionContainer,
+  BillsSelectionWrapper,
+  BillsTableContainer,
+  FormContainer,
+  Header,
+  HeadersWrapper,
+  Hint,
+} from "./BillsSelection.styled";
 
 const BillsSelection = () => {
   const [currentChosenBill, setCurrentChosenBill] = useState("");
   const handleInputChange = (e) => {
-    console.log(e.target.value);
     setCurrentChosenBill(e.target.value);
   };
   const tabsHeaders = [
@@ -19,24 +26,24 @@ const BillsSelection = () => {
       title: "טקסט חופשי",
       description: "חפש הצעות חוק על פי טקסט חופשי",
       content: (
-        <input value={currentChosenBill} onChange={handleInputChange}></input>
+        <input
+          value={currentChosenBill}
+          placeholder="...הקלד כאן"
+          onChange={handleInputChange}
+        ></input>
       ),
     },
   ];
   const [tableData, setTableData] = useState([]);
 
-  const tableHeaders = ["הצבעתך", "הצעת חוק", "מספר"];
   const header = "שקיפות בכנסת";
   const hint =
     "שירות זה נועד כדי לספק לציבור בישראל אפשרות להשוות בין דעותיהם הפוליטיות להצבעות חברי כנסת ישראל";
 
   const searchBillHandler = () => {
     setTableData((prevData) => [...prevData, currentChosenBill]);
+    console.log(currentChosenBill);
   };
-
-  const removeBillHandler = () => {
-
-  }
 
   return (
     <BillsSelectionWrapper>
@@ -45,14 +52,13 @@ const BillsSelection = () => {
         <Hint>{hint}</Hint>
       </HeadersWrapper>
       <FormContainer>
-        
         <BillsSelectionContainer>
           <MyTabs tabsHeaders={tabsHeaders} />
           <button onClick={searchBillHandler}>!חפש</button>
         </BillsSelectionContainer>
 
         <BillsTableContainer>
-          <BillsList headers={tableHeaders} data={tableData} />
+          <BillsList bills={tableData} setBills={setTableData} />
         </BillsTableContainer>
       </FormContainer>
     </BillsSelectionWrapper>
@@ -60,4 +66,3 @@ const BillsSelection = () => {
 };
 
 export default BillsSelection;
-
