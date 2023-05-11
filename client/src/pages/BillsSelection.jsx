@@ -1,7 +1,7 @@
-import styled from "styled-components";
 import MyTabs from "./TabsCard";
 import { useState } from "react";
-import BillsTable from "../common/BillsTable";
+import BillsList from "../common/BillsList";
+import { BillsSelectionContainer, BillsSelectionWrapper, BillsTableContainer, FormContainer, Header, HeadersWrapper, Hint } from "./BillsSelection.styled";
 
 const BillsSelection = () => {
   const [currentChosenBill, setCurrentChosenBill] = useState("");
@@ -31,9 +31,12 @@ const BillsSelection = () => {
     "שירות זה נועד כדי לספק לציבור בישראל אפשרות להשוות בין דעותיהם הפוליטיות להצבעות חברי כנסת ישראל";
 
   const searchBillHandler = () => {
-    console.log(currentChosenBill);
     setTableData((prevData) => [...prevData, currentChosenBill]);
   };
+
+  const removeBillHandler = () => {
+
+  }
 
   return (
     <BillsSelectionWrapper>
@@ -42,13 +45,14 @@ const BillsSelection = () => {
         <Hint>{hint}</Hint>
       </HeadersWrapper>
       <FormContainer>
+        
         <BillsSelectionContainer>
           <MyTabs tabsHeaders={tabsHeaders} />
           <button onClick={searchBillHandler}>!חפש</button>
         </BillsSelectionContainer>
 
         <BillsTableContainer>
-          <BillsTable headers={tableHeaders} data={tableData} />
+          <BillsList headers={tableHeaders} data={tableData} />
         </BillsTableContainer>
       </FormContainer>
     </BillsSelectionWrapper>
@@ -57,52 +61,3 @@ const BillsSelection = () => {
 
 export default BillsSelection;
 
-const BillsSelectionWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  gap: 30px;
-`;
-
-const HeadersWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: 10%;
-  width: 100%;
-  margin-top: 30px;
-  gap: 30px;
-`;
-
-const Header = styled.div`
-  font-family: Open Sans;
-  align-self: center;
-  font-weight: 400;
-  font-size: 40px;
-  font-family: Poppins, sans-serif;
-`;
-
-const Hint = styled.header`
-  font-size: 16px;
-  font-weight: 500;
-  font-family: Poppins, sans-serif;
-`;
-
-const FormContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  height: 90%;
-`;
-
-const BillsSelectionContainer = styled.div`
-  height: 15%;
-`;
-
-const BillsTableContainer = styled.div`
-  display: flex;
-  width: 25%;
-  height: 80%;
-  overflow: scroll;
-`;
