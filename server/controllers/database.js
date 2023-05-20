@@ -1,21 +1,26 @@
 import xml2js from "xml2js";
 import { XMLParser, XMLValidator } from "fast-xml-parser";
 import {
+  checkIfVoteExistInDB,
+  getVoteId,
   insertBillRow,
   insertKnessetMemberRow,
   insertVoteForBillRow,
+  retrieveVotesFromDB,
   updateVoteId,
 } from "../config/database.js";
 
-export const xmlParser = async (xml) => {
-  try {
-    const parser = new XMLParser();
-    const data = parser.parse(xml);
-    return data;
-  } catch (error) {
-    console.log("XML PARSER FUNCTION PROBLEM?", error);
-    throw error;
-  }
+export const xmlParser = (xml) => {
+  return new Promise((resolve, reject) => {
+    const parser = new xml2js.Parser();
+    parser.parseString(xml, (err, result) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(result);
+      }
+    });
+  });
 };
 
 const billUrl = `http://knesset.gov.il/Odata/ParliamentInfo.svc/KNS_Bill()`;
@@ -43,10 +48,18 @@ const fetchBills = async (res, skip, knessetNum) => {
             : entry["content"][0]["m:properties"][0]["d:Name"][0]["_"],
         knessetNum:
           entry["content"][0]["m:properties"][0]["d:KnessetNum"][0]["_"],
+        publishDate:
+          entry["content"][0]["m:properties"][0]["d:PublicationDate"][0]["_"],
       };
     });
+
     for (let bill of bills) {
-      await insertBillRow(bill.billId, bill.name, bill.knessetNum);
+      await insertBillRow(
+        bill.billId,
+        bill.name,
+        bill.knessetNum,
+        bill.publishDate
+      );
     } // Insert the bills into the database
 
     // Fetch the next batch of bills recursively
@@ -58,7 +71,7 @@ const fetchBills = async (res, skip, knessetNum) => {
 };
 
 export const getBillsByKnessetNum = async (req, res) => {
-  let knessetNum = 1;
+  let knessetNum = 25;
   while (knessetNum <= 25) {
     await fetchBills(res, 0, knessetNum);
     knessetNum++;
@@ -127,8 +140,9 @@ export const getBillVoteIds = async (req, res) => {
   let skip = 0;
   let top = 100;
   try {
-    while (knessetNum < 25) {
+    while (knessetNum <= 25) {
       skip = 0;
+      knessetNum += 1;
       while (true) {
         const url = `https://knesset.gov.il/Odata/Votes.svc/View_vote_rslts_hdr_Approved?$filter=knesset_num%20eq%20${knessetNum}&$skip=${skip}&$top=${top}`;
         const response = await fetch(url);
@@ -141,16 +155,20 @@ export const getBillVoteIds = async (req, res) => {
         }
         const data = await xmlParser(toXmlParser);
         const entries = data["feed"]["entry"];
-
         if (!entries) {
-          knessetNum += 1;
-          console.log(knessetNum);
           break;
-        } else {
-          // console.log(data)
-          skip += top;
-          // console.log(skip);
         }
+        const voteIds = entries.map((entry) => {
+          return {
+            sessionId:
+              entry["content"][0]["m:properties"][0]["d:sess_item_id"][0]["_"],
+            voteId: entry["content"][0]["m:properties"][0]["d:vote_id"][0]["_"],
+          };
+        });
+        for (let item of voteIds) {
+          await updateVoteId(item.sessionId, item.voteId);
+        }
+        skip = skip + top;
       }
     }
     return res.status(200).json({ result: "success" });
@@ -163,18 +181,61 @@ export const getBillVoteIds = async (req, res) => {
 // http://knesset.gov.il/Odata/Votes.svc/View_vote_rslts_hdr_Approved?$filter=sess_item_id%20eq%20565532%20 need to extract from here the vote_id by using the bill_id as sess_item_id
 
 // http://knesset.gov.il/Odata/Votes.svc/vote_rslts_kmmbr_shadow?$filter=vote_id%20eq%2031173 odata query to get who voted using vote_id
-// export const getVotes = async (req, res) => {
-//   try {
-//     const { billId: billId } = req.query;
-//     // const voteId = await getBillVoteId(billId);
-//     await updateVoteId(billId, voteId);
-//     const url = `http://knesset.gov.il/Odata/Votes.svc/vote_rslts_kmmbr_shadow?$filter=vote_id%20eq%20${voteId}`; // odata query to get who voted using vote_id
-//     const response = await fetch(url);
-//     const toXmlParser = await response.text();
-//     const data = await xmlParser(toXmlParser);
-//     // console.log(data["feed"]["entry"][0]["content"][0]["m:properties"][0]);
-//     return res.status(200).json({ result: "success" });
-//   } catch (error) {
-//     return res.status(404).json({ error: error.message });
-//   }
-// };
+export const getVotes = async (req, res) => {
+  try {
+    const { billId } = req.query;
+    const billIds = await billId.split(",");
+    const votesToInsert = [];
+    const votesToClient = [];
+
+    for (let id of billIds) {
+      if (!id) continue;
+      console.log(id);
+      const voteIdFromDB = await getVoteId(id);
+      const voteExistsInDB = await checkIfVoteExistInDB(voteIdFromDB);
+      /**Database checking before going to the knessetApi */
+      if (voteExistsInDB) {
+        console.log("voteExistInDB = TRUE");
+        const votesFromDB = await retrieveVotesFromDB(voteIdFromDB);
+        console.log(votesFromDB);
+        votesToClient.push(...votesFromDB);
+        /** Make an Api call to the knesset server */
+      } else {
+        console.log("voteExistsInDB: False");
+        const url = `http://knesset.gov.il/Odata/Votes.svc/vote_rslts_kmmbr_shadow?$filter=vote_id%20eq%20${voteIdFromDB}`;
+        const response = await fetch(url);
+        const toXmlParser = await response.text();
+        const data = await xmlParser(toXmlParser);
+        const entries = data["feed"]["entry"];
+        const votes = entries.map((entry) => {
+          return {
+            voteId: voteIdFromDB,
+            BillId: id,
+            knessetMemberId: Number(
+              entry["content"][0]["m:properties"][0]["d:kmmbr_id"]
+            ),
+            voteValue:
+              entry["content"][0]["m:properties"][0]["d:vote_result"][0]["_"],
+          };
+        });
+        votesToInsert.push(...votes);
+
+        for (let vote of votesToInsert) {
+          await insertVoteForBillRow(
+            vote.voteId,
+            vote.BillId,
+            vote.knessetMemberId,
+            vote.voteValue
+          );
+        }
+      }
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const votesFromDB = await retrieveVotesFromDB(voteIdFromDB);
+      votesToClient.push(...votesFromDB);
+    }
+
+    return res.status(200).json({ votesToClient });
+  } catch (error) {
+    return res.status(404).json({ error: error.message });
+  }
+};

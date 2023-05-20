@@ -6,6 +6,8 @@ import { useSelector } from "react-redux";
 import { Routes, BrowserRouter, Route, Navigate } from "react-router-dom";
 import { createTheme } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
+import Home from "scenes/home";
+import Votes from "scenes/votes";
 
 function App() {
   const mode = useSelector((state) => state.global.mode);
@@ -17,7 +19,9 @@ function App() {
           <CssBaseline />
           <Routes>
             <Route element={<Layout />}>
-              <Route path="/" element={<Navigate to="/" replace />} />
+              <Route path="/" element={<Navigate to="/home" replace />} />
+              <Route path="/home" element={<Home />} />
+              <Route path="/votes" element={<Votes />} />
             </Route>
           </Routes>
         </ThemeProvider>

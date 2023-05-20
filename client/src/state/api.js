@@ -10,10 +10,10 @@ export const api = createApi({
       providesTags: ["Bills"],
     }),
     getVotes: build.query({
-      query: (billId) => ({
+      query: (billIds) => ({
         url: `database/votes`,
         method: "GET",
-        params: { billId },
+        params: { billId: billIds.join(",") },
       }),
       providesTags: ["Votes"],
     }),

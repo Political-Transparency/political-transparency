@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Box } from "@mui/material";
-import { useSelector } from "react-redux";
-import Home from "scenes/home";
+import { Outlet } from "react-router-dom";
+import { useGetVotesQuery } from "state/api";
 
 // import { useGetBillsQuery } from "state/api"
 
@@ -14,7 +14,7 @@ const Layout = () => {
       alignItems="center"
       justifyContent="center"
     >
-      <Home />
+      <Outlet />
     </Box>
   );
 };
