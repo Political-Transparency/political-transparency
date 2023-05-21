@@ -35,16 +35,35 @@ export const FormContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+
+  height: 90%;
   width: 100%;
   gap: 20px;
 `;
 
 export const BillsSelectionContainer = styled.div``;
 
-export const BillsTableContainer = styled.div`
+export const BillsTablesContainer = styled.div`
   display: flex;
-  border: 1px solid black;
-  width: 25%;
+  flex-direction: row-reverse;
+  justify-content: center;
+  width: 99%;
   height: 500px;
   overflow: auto;
 `;
+
+export const BillsTableWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 0.5;
+`;
+
+export const ArrowBox = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex: 0.1;
+`;
+
+export const LoadSelectedBillsButton = styled.button``;

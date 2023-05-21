@@ -26,7 +26,7 @@ const BillsList = (props) => {
 };
 
 const BillsListContainer = styled.div`
-  width: 100%;
+  width: 45%;
 `;
 
 export default BillsList;
