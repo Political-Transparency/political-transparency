@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DataGrid } from "@mui/x-data-grid";
+import { DeleteOutlineOutlined, AddOutlined } from "@mui/icons-material";
 import {
   TextField,
   Autocomplete,
@@ -34,7 +35,10 @@ const Home = () => {
   };
   const handleBillSelect = (event, value) => {
     if (value && !selectedBills.find((bill) => bill.id === value.id)) {
-      const updatedSelectedBills = [...selectedBills, value];
+      const clonedBill = { ...value };
+      clonedBill.selectedOption = [];
+      const updatedSelectedBills = [...selectedBills, clonedBill];
+
       dispatch(setSelectedBills(updatedSelectedBills));
     }
   };
@@ -43,6 +47,7 @@ const Home = () => {
       const selection = {
         id: value.id,
         label: value.row.name,
+        selectedOption: [],
       };
       dispatch(setSelectedBills([...selectedBills, selection]));
       console.log(selectedBills);
@@ -67,6 +72,8 @@ const Home = () => {
     };
     dispatch(setPaginationModel(mergedPaginationModel));
   };
+  const handleBillAcceptEvent = (billId) => {};
+  const handleBillAgainstEvent = () => {};
 
   const columns = [
     {
@@ -236,6 +243,34 @@ const Home = () => {
                         borderRadius: "0.2rem",
                         borderColor: "black",
                       }}
+                      onClick={() => handleBillAcceptEvent(bill.id)}
+                    >
+                      בעד
+                    </Button>
+                    <Button
+                      mr="1rem"
+                      variant="outlined"
+                      size="medium"
+                      sx={{
+                        marginLeft: "1rem",
+                        color: "black",
+                        borderRadius: "0.2rem",
+                        borderColor: "black",
+                      }}
+                      onClick={() => handleBillAgainstEvent(bill.id)}
+                    >
+                      נגד
+                    </Button>
+                    <Button
+                      mr="1rem"
+                      variant="outlined"
+                      size="medium"
+                      sx={{
+                        marginLeft: "1rem",
+                        color: "black",
+                        borderRadius: "0.2rem",
+                        borderColor: "black",
+                      }}
                       onClick={() => handleBillDeleteEvent(bill.id)}
                     >
                       הסר
@@ -262,7 +297,10 @@ const Home = () => {
                 >
                   המשך
                 </Button>
+
                 <Button
+                  endIcon={<DeleteOutlineOutlined sx={{ mr: "0.3rem" }} />}
+                  color="primary"
                   variant="outlined"
                   size="large"
                   sx={{
