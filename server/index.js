@@ -6,7 +6,7 @@ import bodyParser from "body-parser";
 import generalRoutes from "./routes/general.js";
 import databaseRoutes from "./routes/database.js";
 import morgan from "morgan";
-import { getVotes } from "./controllers/general.js";
+import { getVotes, getBillsData } from "./controllers/general.js";
 import { findScoresToMembers } from "./Utils/tests/localUtils.js";
 // const findScoresToMembers = require('../Utils/localUtils.js');
 
@@ -23,6 +23,10 @@ app.use(cors());
 app.use("/general", generalRoutes);
 app.use("/database", databaseRoutes);
 
+app.get("/bills", async (req, res) => {
+  const bills = await getBillsData();
+  res.status(202).json(bills);
+});
 app.get("/", async (req, res) => {
   req.bill_ids = "16633"; //splits by ,
   req.user_votes = [true]; //list of boolean user votes
@@ -75,6 +79,13 @@ export const parseVotes = async (votes) => {
   return map1;
 };
 
+// const port = 8080;
+// app.listen(port, () => {
+//   console.log(`server is listening http://localhost:${port}`);
+// });
+/**
+ * for deployment
+ */
 const port = 8080;
 app.listen(port, () => {
   console.log(`server is listening http://0.0.0.0:${port}`);

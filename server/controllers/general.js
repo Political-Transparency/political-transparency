@@ -9,8 +9,8 @@ import {
 } from "../config/database.js";
 import { xmlParser } from "./database.js";
 
-export const getBillsData = async () => {
-  const bills = await getBillsFromDatabase();
+export const getBillsData = async (req, res) => {
+  const bills = await getBillsFromDatabase(); 
   return bills;
 };
 export const getBillsByKnessetNum = (req, res) => {
