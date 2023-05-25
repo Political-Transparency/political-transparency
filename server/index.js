@@ -77,6 +77,6 @@ export const parseVotes = async (votes) => {
 
 const port = 8080;
 app.listen(port, () => {
-  console.log(`server is listening 0.0.0.0:${port}`);
+  console.log(`server is listening http://0.0.0.0:${port}`);
 });
 export default parseVotes;
