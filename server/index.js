@@ -41,16 +41,16 @@ app.get("/", async (req, res) => {
   const re = { query: { billId: bill_ids_req } };
   const votes = await getVotes(re);
 
-  const map1 = await parseVotes(votes);
-  // console.log(map1);
-  const bill_ids = bill_ids_req.split(",");
-  // console.log("bill_ids", bill_ids)
+  // const map1 = await parseVotes(votes);
+  // // console.log(map1);
+  // const bill_ids = bill_ids_req.split(",");
+  // // console.log("bill_ids", bill_ids)
 
-  // const res1 = findScoresToMembers(bill, [true], map1)
-  const res1 = findScoresToMembers(bill_ids, user_votes_req, map1);
+  // // const res1 = findScoresToMembers(bill, [true], map1)
+  // const res1 = findScoresToMembers(bill_ids, user_votes_req, map1);
 
-  // console.log("res of findScoresToMembers", res1)
-  res.send(res1).json;
+  // // console.log("res of findScoresToMembers", res1)
+  res.send(votes).json;
 });
 
 export const parseVotes = async (votes) => {
@@ -77,6 +77,6 @@ export const parseVotes = async (votes) => {
 
 const port = 8080;
 app.listen(port, () => {
-  console.log(`server is listening http://localhost:${port}`);
+  console.log(`server is listening 0.0.0.0:${port}`);
 });
 export default parseVotes;
