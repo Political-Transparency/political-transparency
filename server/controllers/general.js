@@ -10,8 +10,12 @@ import {
 import { xmlParser } from "./database.js";
 
 export const getBillsData = async (req, res) => {
-  const bills = await getBillsFromDatabase(); 
-  return bills;
+  try {
+    const bills = await getBillsFromDatabase();
+    return res.status(200).json(bills);
+  } catch (error) {
+    return res.status(404).json(error.message);
+  }
 };
 export const getBillsByKnessetNum = (req, res) => {
   try {
@@ -46,8 +50,11 @@ export const getKnessetNumbers = async (req, res) => {
 };
 export const getVotes = async (req) => {
   try {
-    const { billId } = req.query;
-    const billIds = await billId.split(",");
+    const { billData } = req.query;
+    const parsedBillData = JSON.parse(billData);
+    const billIds = parsedBillData.map((element) => element.billId);
+    console.log(billIds);
+    // const billIds = await billId.split(",");
     const votesToInsert = [];
     const votesToClient = [];
     let votesFromDB = null;

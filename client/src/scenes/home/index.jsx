@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { DataGrid } from "@mui/x-data-grid";
+import { DeleteOutlineOutlined, AddOutlined } from "@mui/icons-material";
 import {
   TextField,
   Autocomplete,
@@ -29,12 +30,21 @@ const Home = () => {
   const defaultFilterOptions = createFilterOptions();
   const [knessetInput, setKnessetInput] = useState(0);
   const handleContinueButtonEvent = () => {
-    console.log("Is navigate working?");
-    navigate("/votes");
+    for (const bill of selectedBills) {
+      if (bill.selectedOption === 0) {
+        prompt("אנא מלא את כל דעותיך לגבי כל הצעת חוק שבחרת")
+        break;
+      } else {
+        navigate("/votes");
+      }
+    }
   };
   const handleBillSelect = (event, value) => {
     if (value && !selectedBills.find((bill) => bill.id === value.id)) {
-      const updatedSelectedBills = [...selectedBills, value];
+      const clonedBill = { ...value };
+      clonedBill.selectedOption = 0;
+      const updatedSelectedBills = [...selectedBills, clonedBill];
+
       dispatch(setSelectedBills(updatedSelectedBills));
     }
   };
@@ -43,9 +53,9 @@ const Home = () => {
       const selection = {
         id: value.id,
         label: value.row.name,
+        selectedOption: 0,
       };
       dispatch(setSelectedBills([...selectedBills, selection]));
-      console.log(selectedBills);
     }
   };
   const handleBillDeleteEvent = (index) => {
@@ -66,6 +76,39 @@ const Home = () => {
       ...newPaginationModel,
     };
     dispatch(setPaginationModel(mergedPaginationModel));
+  };
+  const handleBillAcceptEvent = (value) => {
+    const currentBillIndex = selectedBills.findIndex(
+      (bill) => bill.id === value
+    );
+    const updatedBill = {
+      ...selectedBills[currentBillIndex],
+      selectedOption: 1,
+    };
+    // console.log(updatedBill);
+    const newSelectedBill = [
+      ...selectedBills.slice(0, currentBillIndex),
+      updatedBill,
+      ...selectedBills.slice(currentBillIndex + 1),
+    ];
+    dispatch(setSelectedBills(newSelectedBill));
+  };
+
+  const handleBillAgainstEvent = (value) => {
+    const currentBillIndex = selectedBills.findIndex(
+      (bill) => bill.id === value
+    );
+    const updatedBill = {
+      ...selectedBills[currentBillIndex],
+      selectedOption: -1,
+    };
+    // console.log(updatedBill);
+    const newSelectedBill = [
+      ...selectedBills.slice(0, currentBillIndex),
+      updatedBill,
+      ...selectedBills.slice(currentBillIndex + 1),
+    ];
+    dispatch(setSelectedBills(newSelectedBill));
   };
 
   const columns = [
@@ -232,6 +275,38 @@ const Home = () => {
                       size="medium"
                       sx={{
                         marginLeft: "1rem",
+                        color: bill.selectedOption === 1 ? "white" : "black",
+                        backgroundColor:
+                          bill.selectedOption === 1 ? "#21b6ae" : "white",
+                        borderRadius: "0.2rem",
+                        borderColor: "black",
+                      }}
+                      onClick={() => handleBillAcceptEvent(bill.id)}
+                    >
+                      בעד
+                    </Button>
+                    <Button
+                      mr="1rem"
+                      variant="outlined"
+                      size="medium"
+                      sx={{
+                        marginLeft: "1rem",
+                        color: bill.selectedOption === -1 ? "white" : "black",
+                        backgroundColor:
+                          bill.selectedOption === -1 ? "#FF0000" : "white",
+                        borderRadius: "0.2rem",
+                        borderColor: "black",
+                      }}
+                      onClick={() => handleBillAgainstEvent(bill.id)}
+                    >
+                      נגד
+                    </Button>
+                    <Button
+                      mr="1rem"
+                      variant="outlined"
+                      size="medium"
+                      sx={{
+                        marginLeft: "1rem",
                         color: "black",
                         borderRadius: "0.2rem",
                         borderColor: "black",
@@ -262,7 +337,10 @@ const Home = () => {
                 >
                   המשך
                 </Button>
+
                 <Button
+                  endIcon={<DeleteOutlineOutlined sx={{ mr: "0.3rem" }} />}
+                  color="primary"
                   variant="outlined"
                   size="large"
                   sx={{
