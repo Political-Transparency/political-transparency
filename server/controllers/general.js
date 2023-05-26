@@ -51,9 +51,8 @@ export const getKnessetNumbers = async (req, res) => {
 export const getVotes = async (req) => {
   try {
     const { billData } = req.query;
-    const parsedBillData = JSON.parse(billData);
-    const billIds = parsedBillData.map((element) => element.billId);
-    console.log(billIds);
+    const billUserOpinion = JSON.parse(billData);
+    const billIds = billUserOpinion.map((element) => element.billId);
     // const billIds = await billId.split(",");
     const votesToInsert = [];
     const votesToClient = [];
@@ -65,12 +64,12 @@ export const getVotes = async (req) => {
       const voteIdFromDB = await getVoteId(id);
       /**If the vote exists in votes table */
       const voteExistsInDB = await checkIfVoteExistInDB(voteIdFromDB);
+
       /**Database checking before going to the knessetApi */
       if (voteExistsInDB) {
         // console.log("voteExistInDB = TRUE");
         votesFromDB = await retrieveVotesFromDB(voteIdFromDB);
         // console.log(votesFromDB);
-
         /** Make an Api call to the knesset server */
       } else {
         const url = `http://knesset.gov.il/Odata/Votes.svc/vote_rslts_kmmbr_shadow?$filter=vote_id%20eq%20${voteIdFromDB}`;
@@ -99,15 +98,18 @@ export const getVotes = async (req) => {
             vote.voteValue
           );
         }
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        votesFromDB = await retrieveVotesFromDB(voteIdFromDB);
-        if (voteIdFromDB) {
-          votesToClient.push(...votesFromDB);
-        }
+      }
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      votesFromDB = await retrieveVotesFromDB(voteIdFromDB);
+      if (voteIdFromDB) {
+        votesToClient.push(...votesFromDB);
+        // console.log(votesToClient);
       }
     }
+    // console.log(votesToClient);
+    const votesAndParsed = { votesToClient, billUserOpinion };
 
-    return votesToClient;
+    return votesAndParsed;
   } catch (error) {
     return { error: error.message };
   }
