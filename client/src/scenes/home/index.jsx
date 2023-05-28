@@ -193,7 +193,7 @@ const Home = () => {
         />
         <Box
           m="1.5rem 2.5rem"
-          height="80vh"
+          height="60vh"
           sx={{
             "& .MuiDataGrid-root": {
               border: "none",

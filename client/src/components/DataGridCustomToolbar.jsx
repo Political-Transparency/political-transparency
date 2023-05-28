@@ -4,11 +4,8 @@ import {
   GridToolbarDensitySelector,
   GridToolbarContainer,
   GridToolbarColumnsButton,
-  GridToolbarExport,
 } from "@mui/x-data-grid";
 import FlexBetween from "./FlexBetween";
-import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { useDispatch, useSelector } from "react-redux";
 import { setPaginationModel } from "state";
 
@@ -35,22 +32,6 @@ const DataGridCustomToolbar = ({ knessetInput, setKnessetInput }) => {
           <GridToolbarDensitySelector title="רוחב" />
         </FlexBetween>
 
-        <LocalizationProvider dateAdapter={AdapterDayjs}>
-          <DatePicker
-            // onChange={(value) => setToDateValue(value)}
-            label="To"
-            format="DD/MM/YYYY"
-            disableFuture
-            sx={{ width: "10rem", mb: "0.5rem" }}
-          />
-          <DatePicker
-            // onChange={(value) => setFromDateValue(value)}
-            label="From"
-            format="DD/MM/YYYY"
-            disableFuture
-            sx={{ width: "10rem", mb: "0.5rem" }}
-          />
-        </LocalizationProvider>
         <Autocomplete
           disablePortal
           options={[...Array(25).keys()].map((i) => i + 1)}
